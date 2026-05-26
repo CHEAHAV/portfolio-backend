@@ -1,6 +1,3 @@
-# git+https://gitlab.com/innotech_solution/innotech-core-backend.git@dev
-# git+ssh://gitlab.com/innotech_solution/innotech-core-backend.git@dev
-
 fastapi
 uvicorn
 python-dotenv
@@ -16,3 +13,31 @@ emails
 alembic
 httpx
 jinja2
+bcrypt
+boto3
+cryptography
+cython
+email-validator
+firebase-admin
+google-auth
+haversine
+httptools
+numerize
+numpy
+openpyxl
+pandas
+Pillow
+pyasn1
+pycparser
+pydantic
+pytest
+python-dateutil
+python-multipart
+python-resize-image
+PyYAML
+qrcode
+requests
+typer
+weasyprint
+websockets
+Werkzeug
