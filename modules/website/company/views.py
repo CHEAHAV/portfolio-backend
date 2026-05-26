@@ -1,0 +1,72 @@
+import os
+from icb.api.company.models import TBL_COMPANY
+from icb.core.db_session import get_db
+from main import website
+from fastapi import Depends, Query
+from sqlalchemy.orm import Session
+import math
+
+@website.get("/companys", tags=["Company"])
+async def get_company(
+    page: int     = Query(default=1, ge=1),
+    size: int     = Query(default=10, ge=1),
+    db  : Session = Depends(get_db)
+):
+    base_query = db.query(TBL_COMPANY).filter()
+
+    total   = base_query.count()
+    results = base_query.order_by(TBL_COMPANY.name\
+                        .asc())\
+                        .offset((page - 1) * size)\
+                        .limit(size)\
+                        .all()
+    total_pages = math.ceil(total / size) if size else 1
+    
+    base_url = os.getenv("APP_URL", "")
+
+    data_list = [{
+        'id'                 : com.id,
+        'name'               : com.name,
+        'name_lc'            : com.name_lc,
+        'description'        : com.description,
+        'description_lc'     : com.description_lc,
+        'logo'               : com.logo,
+        'banner'             : com.banner,
+        'phone'              : com.phone,
+        'phone2'             : com.phone_2,
+        'telegram'           : com.telegram,
+        'email'              : com.email,
+        'website'            : com.website,
+        "website_link"       : f"{base_url}/static/images/Company/{com.website}" if com.website  is not None else "",
+        'facebook'           : com.facebook,
+        "facebook_link"      : f"{base_url}/static/images/Company/{com.facebook}" if com.facebook  is not None else "",
+        'youtube'            : com.youtube,
+        "youtube_link"       : f"{base_url}/static/images/Company/{com.youtube}" if com.youtube  is not None else "",
+        'country_id'         : com.country_id,
+        'province_id'        : com.province_id,
+        'district_id'        : com.district_id,
+        'commune_id'         : com.commune_id,
+        'village_id'         : com.village_id,
+        'street_no'          : com.street_no,
+        'house_no'           : com.house_no,
+        'lat_long'           : com.lat_long,
+        'registration_number': com.registration_number,
+        'vat_tin'            : com.vat_tin
+    } for com in results]
+
+    return {
+        'ok'     : True,
+        'status' : 200,
+        'title'  : 'Campany',
+        'message': 'Data retrieved successfully',
+        'data'   : {
+            'lists'    : data_list,
+            'meta_data': {
+                'total'       : total,
+                'total_page'  : total_pages,
+                'current_page': page,
+                'size'        : size,
+            }
+        },
+        'error': {}
+    }

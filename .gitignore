@@ -1,0 +1,27 @@
+.env
+env310
+venv
+venvc
+env
+pycache
+# static
+static/fonts
+static/image
+log
+~$Docs.docx
+__pycache__
+dump.rdb
+master_data/.~lock.*
+.idea
+*.bak
+.DS_Store
+backupdb/db_log.sql
+uploads
+/build
+setup.py
+drop_table_fields.py
+drop_table_unused.py
+pyproject.toml
+.vscode
+test_email.py
+static
