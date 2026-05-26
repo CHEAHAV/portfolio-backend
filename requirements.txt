@@ -1,2 +1,5 @@
 # git+https://gitlab.com/innotech_solution/innotech-core-backend.git@dev
 # git+ssh://gitlab.com/innotech_solution/innotech-core-backend.git@dev
+
+echo uvicorn
+echo fastapi
