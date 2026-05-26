@@ -41,3 +41,4 @@ typer
 weasyprint
 websockets
 Werkzeug
+pytz
