@@ -1,6 +1,17 @@
 # git+https://gitlab.com/innotech_solution/innotech-core-backend.git@dev
 # git+ssh://gitlab.com/innotech_solution/innotech-core-backend.git@dev
 
-uvicorn
 fastapi
+uvicorn
 python-dotenv
+fastapi-cache2
+sqlalchemy
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+celery
+redis
+aiosmtplib
+emails
+alembic
+httpx
