@@ -14,7 +14,7 @@ from modules.story.models import (
     TBL_STORY_REJECTED,
     TBL_STORY_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/stories", tags=["Story"])
 @website.get("/storys", tags=["Story"], include_in_schema=False)
@@ -40,8 +40,8 @@ async def get_story(
         'title'      : s.title,
         'description': s.description,
         'icon_name'  : s.icon_name,
-        'icon'       : s.icon,
-        "icon_link"  : f"{base_url}/static/images/Story/{s.icon}" if s.icon  is not None else "",
+        'icon'       : media_name(s.icon),
+        "icon_link"  : media_url(s.icon),
         'active'     : s.active
     } for s in results]
 
@@ -80,7 +80,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    return save_upload_with_unique_name(icon, icon_DIR)
+    return upload_image_to_cloudinary(icon, "Story")
 
 @website.post("/stories", tags=["Story"], status_code=201)
 async def create_story(
@@ -134,8 +134,8 @@ async def create_story(
             "title"      : new_item.title,
             "description": new_item.description,
             "icon_name"  : new_item.icon_name,
-            "icon"       : new_item.icon,
-            "icon_link"  : f"{base_url}/static/images/Story/{new_item.icon}" if new_item.icon else "",
+            "icon"       : media_name(new_item.icon),
+            "icon_link"  : media_url(new_item.icon),
             "active"     : new_item.active,
         },
         "error": {},
@@ -179,8 +179,8 @@ async def update_story(
             "title"      : item.title,
             "description": item.description,
             "icon_name"  : item.icon_name,
-            "icon"       : item.icon,
-            "icon_link"  : f"{base_url}/static/images/Story/{item.icon}" if item.icon else "",
+            "icon"       : media_name(item.icon),
+            "icon_link"  : media_url(item.icon),
             "active"     : item.active,
         },
         "error": {},

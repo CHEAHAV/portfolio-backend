@@ -22,7 +22,7 @@ class SOCIAL_CRUD(CRUDAPI):
             {"field" : "id", "text" : "ID"},
             {"field" : "name", "text" : "Name"},
             {"field" : "icon", "text" : "Icon"},
-            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': f"{os.getenv('APP_URL','')}/static/images/ContactMe/" }], "text": "Icon Link"},
+            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': "" }], "text": "Icon Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

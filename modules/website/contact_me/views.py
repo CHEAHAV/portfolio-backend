@@ -14,7 +14,7 @@ from modules.contact_me.models import (
     TBL_CONTACT_ME_REJECTED,
     TBL_CONTACT_ME_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/contacts", tags=["ContactMe"])
 @website.get("/contact-mes", tags=["ContactMe"], include_in_schema=False)
@@ -39,8 +39,8 @@ async def get_ContactMe(
         'id'         : c.id,
         'name'       : c.name,
         'description': c.description,
-        'icon'       : c.icon,
-        "icon_link"  : f"{base_url}/static/images/ContactMe/{c.icon}" if c.icon  is not None else "",
+        'icon'       : media_name(c.icon),
+        "icon_link"  : media_url(c.icon),
         'active'     : c.active
     } for c in results]
 
@@ -79,7 +79,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    return save_upload_with_unique_name(icon, icon_DIR)
+    return upload_image_to_cloudinary(icon, "ContactMe")
 
 @website.post("/contact-mes", tags=["ContactMe"], status_code=201)
 async def create_contact_me(
@@ -130,8 +130,8 @@ async def create_contact_me(
             "id"         : new_item.id,
             "name"       : new_item.name,
             "description": new_item.description,
-            "icon"       : new_item.icon,
-            "icon_link"  : f"{base_url}/static/images/ContactMe/{new_item.icon}" if new_item.icon else "",
+            "icon"       : media_name(new_item.icon),
+            "icon_link"  : media_url(new_item.icon),
             "active"     : new_item.active,
         },
         "error": {},
@@ -172,8 +172,8 @@ async def update_contact_me(
             "id"         : item.id,
             "name"       : item.name,
             "description": item.description,
-            "icon"       : item.icon,
-            "icon_link"  : f"{base_url}/static/images/ContactMe/{item.icon}" if item.icon else "",
+            "icon"       : media_name(item.icon),
+            "icon_link"  : media_url(item.icon),
             "active"     : item.active,
         },
         "error": {},

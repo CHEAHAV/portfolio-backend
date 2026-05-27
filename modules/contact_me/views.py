@@ -23,7 +23,7 @@ class CONTACT_ME_CRUD(CRUDAPI):
             {"field" : "name", "text" : "Name"},
             {"field" : "description", "text" : "Description"},
             {"field" : "icon", "text" : "Icon"},
-            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': f"{os.getenv('APP_URL','')}/static/images/ContactMe/" }], "text": "Icon Link"},
+            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': "" }], "text": "Icon Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

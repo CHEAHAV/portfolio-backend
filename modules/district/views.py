@@ -30,7 +30,7 @@ class DISTRICT_CRUD(CRUDAPI):
             {"field" : "name", "model": TBL_PROVINCE, "label": "province_name", "text" : "Province"},
             {"field" : "description", "text" : "Description"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/District/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
         ]
 
     def get_list_query(self, model):

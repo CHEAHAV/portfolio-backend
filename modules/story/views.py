@@ -24,7 +24,7 @@ class STORY_CRUD(CRUDAPI):
             {"field" : "description", "text" : "Description"},
             {"field" : "icon_name", "text" : "Icon name"},
             {"field" : "icon", "text" : "Icon"},
-            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': f"{os.getenv('APP_URL','')}/static/images/ContactMe/" }], "text": "Icon Link"},
+            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': "" }], "text": "Icon Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

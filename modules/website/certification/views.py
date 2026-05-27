@@ -15,7 +15,7 @@ from modules.certification.models import (
     TBL_CERTIFICATION_REJECTED,
     TBL_CERTIFICATION_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/certifications", tags=["Certification"])
 async def get_certification(
@@ -42,8 +42,8 @@ async def get_certification(
         'issuer'       : c.issuer,
         'date_earned'  : c.date_earned.strftime("%d, %b, %Y") if c.date_earned else "",
         'credential_id': c.credential_id,
-        'icon'         : c.icon,
-        "icon_link"    : f"{base_url}/static/images/Certification/{c.icon}" if c.icon  is not None else "",
+        'icon'         : media_name(c.icon),
+        "icon_link"    : media_url(c.icon),
         'active'       : c.active
     } for c in results]
 
@@ -82,7 +82,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    return save_upload_with_unique_name(icon, icon_DIR)
+    return upload_image_to_cloudinary(icon, "Certification")
 
 def parse_date(v: str) -> date:
     return date.fromisoformat(v)
@@ -147,8 +147,8 @@ async def create_certification(
         "issuer"       : new_item.issuer,
         "date_earned"  : new_item.date_earned.strftime("%d, %b, %Y") if new_item.date_earned else "",
         "credential_id": new_item.credential_id,
-        "icon"         : new_item.icon,
-        "icon_link"    : f"{base_url}/static/images/Certification/{new_item.icon}" if new_item.icon else "",
+        "icon"         : media_name(new_item.icon),
+        "icon_link"    : media_url(new_item.icon),
         "active"       : new_item.active,
         },
         "error": {},
@@ -197,8 +197,8 @@ async def update_certification(
             "issuer"       : item.issuer,
             "date_earned"  : item.date_earned.strftime("%d, %b, %Y") if item.date_earned else "",
             "credential_id": item.credential_id,
-            "icon"         : item.icon,
-            "icon_link"    : f"{base_url}/static/images/Certification/{item.icon}" if item.icon else "",
+            "icon"         : media_name(item.icon),
+            "icon_link"    : media_url(item.icon),
             "active"       : item.active,
         },
         "error": {},

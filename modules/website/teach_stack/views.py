@@ -14,7 +14,7 @@ from modules.teach_stack.models import (
     TBL_TEACH_STACK_REJECTED,
     TBL_TEACH_STACK_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/teach-stacks", tags=["TeachStack"])
 async def get_teach_stack(
@@ -37,11 +37,11 @@ async def get_teach_stack(
     data_list = [{
         'id'              : t.id,
         'name_left'       : t.name_left,
-        'image_left'      : t.image_left,
-        "image_left_link" : f"{base_url}/static/images/TeachStack/{t.image_left}" if t.image_left is not None else "",
+        'image_left'      : media_name(t.image_left),
+        "image_left_link" : media_url(t.image_left),
         'name_right'      : t.name_right,
-        'image_right'     : t.image_right,
-        "image_right_link": f"{base_url}/static/images/TeachStack/{t.image_right}" if t.image_right is not None else "",
+        'image_right'     : media_name(t.image_right),
+        "image_right_link": media_url(t.image_right),
         'active'          : t.active
     } for t in results]
 
@@ -80,7 +80,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    return save_upload_with_unique_name(image, IMAGE_DIR)
+    return upload_image_to_cloudinary(image, "TeachStack")
 
 @website.post("/teach-stacks", tags=["TeachStack"], status_code=201)
 async def create_teach_stack(
@@ -136,11 +136,11 @@ async def create_teach_stack(
         "data"   : {
             "id"              : new_item.id,
             "name_left"       : new_item.name_left,
-            "image_left"      : new_item.image_left,
-            "image_left_link" : f"{base_url}/static/images/TeachStack/{new_item.image_left}" if new_item.image_left else "",
+            "image_left"      : media_name(new_item.image_left),
+            "image_left_link" : media_url(new_item.image_left),
             "name_right"      : new_item.name_right,
-            "image_right"     : new_item.image_right,
-            "image_right_link": f"{base_url}/static/images/TeachStack/{new_item.image_right}" if new_item.image_right else "",
+            "image_right"     : media_name(new_item.image_right),
+            "image_right_link": media_url(new_item.image_right),
             "active"          : new_item.active,
         },
         "error": {},
@@ -182,11 +182,11 @@ async def update_teach_stack(
         "data"   : {
             "id"              : item.id,
             "name_left"       : item.name_left,
-            "image_left"      : item.image_left,
-            "image_left_link" : f"{base_url}/static/images/TeachStack/{item.image_left}" if item.image_left else "",
+            "image_left"      : media_name(item.image_left),
+            "image_left_link" : media_url(item.image_left),
             "name_right"      : item.name_right,
-            "image_right"     : item.image_right,
-            "image_right_link": f"{base_url}/static/images/TeachStack/{item.image_right}" if item.image_right else "",
+            "image_right"     : media_name(item.image_right),
+            "image_right_link": media_url(item.image_right),
             "active"          : item.active,
         },
         "error": {},

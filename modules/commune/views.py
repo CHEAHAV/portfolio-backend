@@ -30,7 +30,7 @@ class COMMUNE_CRUD(CRUDAPI):
             {"field" : "name", "model": TBL_DISTRICT, "label": "district_name", "text" : "District"},
             {"field" : "description", "text" : "Description"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/Commune/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
         ]
 
     def get_list_query(self, model):

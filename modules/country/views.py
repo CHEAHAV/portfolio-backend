@@ -25,7 +25,7 @@ class COUNTRY_CRUD(CRUDAPI):
             {"field" : "name_lc", "text" : "Name(Local)"},
             {"field" : "description", "text" : "Description"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/Country/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
         ]
 
 crud = COUNTRY_CRUD('Country', 'countries', TBL_COUNTRY, {}, schema=CountrySchema)

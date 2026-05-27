@@ -27,7 +27,7 @@ class PROJECT_CRUD(CRUDAPI):
             {"field" : "platform", "text" : "Platform"},
             {"field" : "challenge", "text" : "Challenge"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/Project/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

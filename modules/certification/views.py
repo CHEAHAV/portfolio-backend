@@ -26,7 +26,7 @@ class CERTIFICATION_CRUD(CRUDAPI):
             {"field" : "date_earned", "text" : "Date Earned"},
             {"field" : "credential_id", "text" : "Credential ID"},
             {"field" : "icon", "text" : "Icon"},
-            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': f"{os.getenv('APP_URL','')}/static/images/Certification/" }], "text": "Icon Link"},
+            {"label" : "icon_link", "concat": [{'field': 'icon', 'separator': "" }], "text": "Icon Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

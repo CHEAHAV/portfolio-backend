@@ -14,7 +14,7 @@ from modules.mycore.models import (
     TBL_MY_CORE_REJECTED,
     TBL_MY_CORE_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/my-cores", tags=["MyCore"])
 async def get_my_core(
@@ -39,8 +39,8 @@ async def get_my_core(
             "id"         : m.id,
             "name"       : m.name,
             "description": m.description,
-            "image"      : m.image,
-            "image_link" : f"{base_url}/static/images/MyCore/{m.image}" if m.image else "",
+            "image"      : media_name(m.image),
+            "image_link" : media_url(m.image),
             "active"     : m.active,
         }
         for m in results
@@ -81,7 +81,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    return save_upload_with_unique_name(image, IMAGE_DIR)
+    return upload_image_to_cloudinary(image, "MyCore")
 
 @website.post("/my-cores", tags=["MyCore"], status_code=201)
 async def create_my_core(
@@ -131,9 +131,9 @@ async def create_my_core(
         "data"   : {
             "id"        : new_item.id,
             "name"      : new_item.name,
-            "image"     : new_item.image,
+            "image"     : media_name(new_item.image),
             "active"    : new_item.active,
-            "image_link": f"{base_url}/static/images/MyCore/{new_item.image}" if new_item.image else "",
+            "image_link": media_url(new_item.image),
         },
         "error": {},
     }
@@ -172,9 +172,9 @@ async def update_my_core(
             "id"         : item.id,
             "name"       : item.name,
             "description": item.description,
-            "image"      : item.image,
+            "image"      : media_name(item.image),
             "active"     : item.active,
-            "image_link" : f"{base_url}/static/images/MyCore/{item.image}" if item.image else "",
+            "image_link" : media_url(item.image),
         },
         "error": {},
     }

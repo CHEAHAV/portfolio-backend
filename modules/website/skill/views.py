@@ -14,7 +14,7 @@ from modules.skill.models import (
     TBL_SKILL_REJECTED,
     TBL_SKILL_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/skills", tags=["Skill"])
 async def get_skill(
@@ -39,8 +39,8 @@ async def get_skill(
         'name'       : s.name,
         'score'      : s.score,
         'description': s.description,
-        'image'      : s.image,
-        "image_link" : f"{base_url}/static/images/Skill/{s.image}" if s.image  is not None else "",
+        'image'      : media_name(s.image),
+        "image_link" : media_url(s.image),
         'active'     : s.active
     } for s in results]
 
@@ -78,7 +78,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    return save_upload_with_unique_name(image, IMAGE_DIR)
+    return upload_image_to_cloudinary(image, "Skill")
 
 @website.post("/skills", tags=["Skill"], status_code=201)
 async def create_skill(
@@ -135,8 +135,8 @@ async def create_skill(
             "name"       : new_item.name,
             "score"      : new_item.score,
             "description": new_item.description,
-            "image"      : new_item.image,
-            "image_link" : f"{base_url}/static/images/Skill/{new_item.image}" if new_item.image else "",
+            "image"      : media_name(new_item.image),
+            "image_link" : media_url(new_item.image),
             "active"     : new_item.active,
         },
         "error": {},
@@ -182,8 +182,8 @@ async def update_skill(
             "name"       : item.name,
             "score"      : item.score,
             "description": item.description,
-            "image"      : item.image,
-            "image_link" : f"{base_url}/static/images/Skill/{item.image}" if item.image else "",
+            "image"      : media_name(item.image),
+            "image_link" : media_url(item.image),
             "active"     : item.active,
         },
         "error": {},

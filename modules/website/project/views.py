@@ -14,7 +14,7 @@ from modules.project.models import (
     TBL_PROJECT_REJECTED,
     TBL_PROJECT_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/projects", tags=["Project"])
 async def get_project(
@@ -42,8 +42,8 @@ async def get_project(
         'role'       : p.role,
         'platform'   : p.platform,
         'challenge'  : p.challenge,
-        'image'      : p.image,
-        "image_link" : f"{base_url}/static/images/Project/{p.image}" if p.image  is not None else "",
+        'image'      : media_name(p.image),
+        "image_link" : media_url(p.image),
         'active'     : p.active
     } for p in results]
 
@@ -82,7 +82,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    return save_upload_with_unique_name(image, IMAGE_DIR)
+    return upload_image_to_cloudinary(image, "Project")
 
 @website.post("/projects", tags=["Project"], status_code=201)
 async def create_project(
@@ -145,9 +145,9 @@ async def create_project(
             "role"       : new_item.role,
             "platform"   : new_item.platform,
             "challenge"  : new_item.challenge,
-            "image"      : new_item.image,
+            "image"      : media_name(new_item.image),
             "active"     : new_item.active,
-            "image_link" : f"{base_url}/static/images/Project/{new_item.image}" if new_item.image else "",
+            "image_link" : media_url(new_item.image),
         },
         "error": {},
     }
@@ -198,9 +198,9 @@ async def update_project(
             "role"       : item.role,
             "platform"   : item.platform,
             "challenge"  : item.challenge,
-            "image"      : item.image,
+            "image"      : media_name(item.image),
             "active"     : item.active,
-            "image_link" : f"{base_url}/static/images/Project/{item.image}" if item.image else "",
+            "image_link" : media_url(item.image),
         },
         "error": {},
     }

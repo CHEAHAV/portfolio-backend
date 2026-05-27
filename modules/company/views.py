@@ -21,6 +21,7 @@ from modules.location_id import assign_prefixed_id
 from modules.location_join import lookup_name
 from modules.province.models import TBL_PROVINCE
 from modules.village.models import TBL_VILLAGE
+from modules.website.upload_utils import media_url
 import os
 
 
@@ -75,8 +76,7 @@ def _lookup_name(db, model, value):
 
 
 def _company_logo_link(row):
-    base_url = os.getenv("APP_URL", "")
-    return f"{base_url}/static/images/Company/{row.logo}" if row.logo else ""
+    return media_url(row.logo)
 
 
 def _serialize_company(row, db: Session | None = None):

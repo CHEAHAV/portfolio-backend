@@ -18,11 +18,30 @@ import time
 from icb.lib.render_api import response_msg
 from icb.lib.upload_lib import upload_image_file
 from icb.lib.s3_lib import delete_file_from_aws
+from modules.website.upload_utils import is_remote_url, media_name, upload_image_to_cloudinary
 import zipfile
 import io
 from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
+
+CLOUDINARY_IMAGE_FOLDERS = {
+    "Certification",
+    "Commune",
+    "ContactMe",
+    "Country",
+    "Department",
+    "District",
+    "Info",
+    "MyCore",
+    "Project",
+    "Province",
+    "Skill",
+    "Social",
+    "Story",
+    "TeachStack",
+    "Village",
+}
 
 
 def unique_file_name_for_folder(folder: str, file_name: str, is_private: bool = False) -> str:
@@ -39,6 +58,23 @@ def unique_file_name_for_folder(folder: str, file_name: str, is_private: bool = 
     suffix = Path(source_name).suffix.lower()
     stem = Path(source_name).stem or 'upload'
     return f"{stem}-{uuid.uuid4().hex}{suffix}"
+
+
+def is_image_upload(file_extension: str, content_type: str | None) -> bool:
+    return file_extension in ['jpeg', 'png', 'jpg', 'gif'] and content_type in [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/jpg",
+    ]
+
+
+def should_upload_to_cloudinary(folder: str | None, file_extension: str, content_type: str | None, is_private: bool) -> bool:
+    return (
+        not is_private
+        and (folder or "") in CLOUDINARY_IMAGE_FOLDERS
+        and is_image_upload(file_extension, content_type)
+    )
 
 # Custom route for import file
 @app.post("/api/v1/wb/upload-file", tags=['Upload File'])
@@ -157,6 +193,10 @@ async def upload_files(
             )
             response_file_name = stored_file_name
 
+            upload_to_cloudinary = should_upload_to_cloudinary(folder, file_extension, content_type, is_private)
+            if upload_to_cloudinary:
+                response_file_name = upload_image_to_cloudinary(file, folder or "Uploads")
+
             fobj = TBL_FILE_UPLOAD(
                 id            = id,
                 module        = module,
@@ -172,20 +212,22 @@ async def upload_files(
                 is_private    = is_private
             )
             
-            upload_image_file(file, folder, stored_file_name, is_private=is_private)
+            if not upload_to_cloudinary:
+                upload_image_file(file, folder, stored_file_name, is_private=is_private)
                         
             db.add(fobj)
             db.commit()
             
         # Return record with success message
         return response_msg('File Upload', "File is uploaded successfully", 200, True, 
-                            data={
-                                "file_name" : response_file_name,
-                                "folder"    : folder,
-                                "module"    : module,
-                                "module_id" : module_id,
-                                "is_private": is_private
-                            })
+            data={
+                "file_name" : media_name(response_file_name) if is_remote_url(response_file_name) else response_file_name,
+                "file_link" : response_file_name if is_remote_url(response_file_name) else "",
+                "folder"    : folder,
+                "module"    : module,
+                "module_id" : module_id,
+                "is_private": is_private
+            })
         
     except Exception as e:
         logger.error(e)
@@ -211,7 +253,7 @@ async def delete_upload_files(
             else BASE_DIR + '/static/images/%s%s'
         ) % ('%s/' % obj.folder if obj.folder else '', obj.file_name)
         
-        if os.path.exists(file_path):
+        if not is_remote_url(obj.file_name) and os.path.exists(file_path):
             os.remove(file_path)
         
         if os.getenv('FILE_STORAGE') == 'S3':
@@ -374,7 +416,12 @@ async def upload_image_files(
             company_id    = "SYSTEM", 
         )
         
-        upload_image_file(file, folder, file_name, {'ContentType':content_type})
+        upload_to_cloudinary = should_upload_to_cloudinary(folder, file_extension, content_type, False)
+        response_file_name = file_name
+        if upload_to_cloudinary:
+            response_file_name = upload_image_to_cloudinary(file, folder or "Uploads")
+        else:
+            upload_image_file(file, folder, file_name, {'ContentType':content_type})
         
         db.add(fobj)
         db.commit()
@@ -385,7 +432,11 @@ async def upload_image_files(
             "File is uploaded successfully",
             200,
             True,
-            data={"file_name": file_name, "folder": folder},
+            data={
+                "file_name": media_name(response_file_name) if is_remote_url(response_file_name) else response_file_name,
+                "file_link": response_file_name if is_remote_url(response_file_name) else "",
+                "folder": folder,
+            },
         )
         
     except Exception as e:

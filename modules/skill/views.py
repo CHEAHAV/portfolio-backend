@@ -24,7 +24,7 @@ class SKILL_CRUD(CRUDAPI):
             {"field" : "score", "text" : "Score"},
             {"field" : "description", "text" : "Decription"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/Skill/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

@@ -42,5 +42,5 @@ weasyprint
 websockets
 Werkzeug
 pytz
-# cloudinary
-# python-multipart
+cloudinary
+python-multipart

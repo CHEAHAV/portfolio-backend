@@ -14,7 +14,7 @@ from modules.social.models import (
     TBL_SOCIAL_REJECTED,
     TBL_SOCIAL_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/socials", tags=["Social"])
 async def get_social(
@@ -37,8 +37,8 @@ async def get_social(
     data_list = [{
         'id'       : s.id,
         'name'     : s.name,
-        'icon'     : s.icon,
-        "icon_link": f"{base_url}/static/images/Social/{s.icon}" if s.icon  is not None else "",
+        'icon'     : media_name(s.icon),
+        "icon_link": media_url(s.icon),
         'active'   : s.active
     } for s in results]
 
@@ -77,7 +77,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    return save_upload_with_unique_name(icon, icon_DIR)
+    return upload_image_to_cloudinary(icon, "Social")
 
 @website.post("/socials", tags=["Social"], status_code=201)
 async def create_social(
@@ -125,8 +125,8 @@ async def create_social(
         "data"   : {
             "id"        : new_item.id,
             "name"      : new_item.name,
-            "icon"     : new_item.icon,
-            "icon_link": f"{base_url}/static/images/Social/{new_item.icon}" if new_item.icon else "",
+            "icon"     : media_name(new_item.icon),
+            "icon_link": media_url(new_item.icon),
             "active"    : new_item.active,
         },
         "error": {},
@@ -163,8 +163,8 @@ async def update_social(
         "data"   : {
             "id"       : item.id,
             "name"     : item.name,
-            "icon"     : item.icon,
-            "icon_link": f"{base_url}/static/images/Social/{item.icon}" if item.icon else "",
+            "icon"     : media_name(item.icon),
+            "icon_link": media_url(item.icon),
             "active"   : item.active,
         },
         "error": {},

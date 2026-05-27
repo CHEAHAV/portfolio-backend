@@ -22,10 +22,10 @@ class TEACH_STACK_CRUD(CRUDAPI):
             {"field" : "id", "text" : "ID"},
             {"field" : "name_left", "text" : "Name Left"},
             {"field" : "image_left", "text" : "Image Left"},
-            {"label" : "image_left_link", "concat": [{'field': 'image_left', 'separator': f"{os.getenv('APP_URL','')}/static/images/TeachStack/" }], "text": "Image Left Link"},
+            {"label" : "image_left_link", "concat": [{'field': 'image_left', 'separator': "" }], "text": "Image Left Link"},
             {"field" : "name_right", "text" : "Name Right"},
             {"field" : "image_right", "text" : "Image Right"},
-            {"label" : "image_right_link", "concat": [{'field': 'image_right', 'separator': f"{os.getenv('APP_URL','')}/static/images/TeachStack/" }], "text": "Image Right Link"},
+            {"label" : "image_right_link", "concat": [{'field': 'image_right', 'separator': "" }], "text": "Image Right Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

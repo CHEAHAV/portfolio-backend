@@ -14,7 +14,7 @@ from modules.info.models import (
     TBL_INFO_REJECTED,
     TBL_INFO_UNAUTH,
 )
-from modules.website.upload_utils import save_upload_with_unique_name
+from modules.website.upload_utils import media_name, media_url, upload_image_to_cloudinary
 
 @website.get("/infos", tags=["Info"])
 async def get_info(
@@ -38,8 +38,8 @@ async def get_info(
         'id'         : c.id,
         'name'       : c.name,
         'description': c.description,
-        'image'      : c.image,
-        "image_link" : f"{base_url}/static/images/Info/{c.image}" if c.image  is not None else "",
+        'image'      : media_name(c.image),
+        "image_link" : media_url(c.image),
         'active'     : c.active
     } for c in results]
 
@@ -78,7 +78,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    return save_upload_with_unique_name(image, IMAGE_DIR)
+    return upload_image_to_cloudinary(image, "Info")
 
 @website.post("/infos", tags=["Info"], status_code=201)
 async def create_info(
@@ -128,9 +128,9 @@ async def create_info(
         "data"   : {
             "id"        : new_item.id,
             "name"      : new_item.name,
-            "image"     : new_item.image,
+            "image"     : media_name(new_item.image),
             "active"    : new_item.active,
-            "image_link": f"{base_url}/static/images/Info/{new_item.image}" if new_item.image else "",
+            "image_link": media_url(new_item.image),
         },
         "error": {},
     }
@@ -169,9 +169,9 @@ async def update_info(
             "id"         : item.id,
             "name"       : item.name,
             "description": item.description,
-            "image"      : item.image,
+            "image"      : media_name(item.image),
             "active"     : item.active,
-            "image_link" : f"{base_url}/static/images/Info/{item.image}" if item.image else "",
+            "image_link" : media_url(item.image),
         },
         "error": {},
     }

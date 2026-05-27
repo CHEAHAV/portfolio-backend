@@ -24,7 +24,7 @@ class DEPARTMENT_CRUD(CRUDAPI):
             {"field" : "name", "text" : "Name"},
             {"field" : "description", "text" : "Description"},
             {"field" : "image", "text" : "Image"},
-            {"label" : "image_link", "concat": [{'field': 'image', 'separator': f"{os.getenv('APP_URL','')}/static/images/Department/" }], "text": "Image Link"},
+            {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
             {"field" : "active", "text" : "Active"},
         ]
 

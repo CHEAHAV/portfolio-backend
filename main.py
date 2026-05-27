@@ -1,3 +1,4 @@
+import cloudinary
 from fastapi import FastAPI, Body, Request, Response
 from config import settings
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -70,6 +71,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME", "do4c64x7h"),
+    api_key=os.getenv("CLOUDINARY_API_KEY", "187482869256971"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
 )
 
 @app.middleware("http")

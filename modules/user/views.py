@@ -28,6 +28,7 @@ from io import BytesIO
 from icb.lib.render_api import ResponseModel
 from icb.core.lib import check_is_superuser
 from icb.core.role_delegation import get_active_delegated_permission_rows, get_effective_role_ids
+from modules.website.upload_utils import media_url
 from icb.lib.join_helper import JoinHelper
 from icb.lib.keycloak_helper import *
 from icb.core.crud_keycloak import CODE_TTL_MINUTES, _check_system_restriction
@@ -936,7 +937,7 @@ async def read_users_me(
         # 'date_of_birth'  : current_user.date_of_birth,
         # 'full_name'      : current_user.full_name,
         'photo'          : current_user.photo,
-        'photo_link'     : f"{os.getenv('APP_URL','')}/static/images/User/{current_user.photo}" if current_user.photo else None,
+        'photo_link'     : media_url(current_user.photo) or None,
         # 'gender'         : current_user.gender,
         'language'       : current_user.language,
         'is_superuser'   : is_superuser,
@@ -1337,7 +1338,7 @@ async def user_get_list_access_branches(
             'email'        : getattr(b, 'email', None),
             'company_id'   : getattr(b, 'company_id', None),
             'image'        : getattr(b, 'image', None),
-            'image_link'   : f"{os.getenv('APP_URL','')}/static/images/Branch/" + getattr(b, 'image', None),
+            'image_link'   : media_url(getattr(b, 'image', None)),
         }
         data.append(branches_data)
 
@@ -1404,7 +1405,7 @@ async def user_get_list_access_branches(
             'email'      : getattr(c, 'email', None),
             'company_id' : getattr(c, 'company_id', None),
             'logo'       : getattr(c, 'logo', None),
-            'logo_link'  : f"{os.getenv('APP_URL','')}/static/images/Company/" + getattr(c, 'logo', None),
+            'logo_link'  : media_url(getattr(c, 'logo', None)),
         })
 
     total_pages = max(math.ceil(total / size), 1)
