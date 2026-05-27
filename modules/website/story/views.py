@@ -140,3 +140,48 @@ async def create_story(
         },
         "error": {},
     }
+
+
+@website.put("/stories/{id}", tags=["Story"])
+@website.put("/storys/{id}", tags=["Story"], include_in_schema=False)
+async def update_story(
+    id         : str,
+    title      : str                  = Form(..., examples=[""]),
+    description: str                  = Form(..., examples=[""]),
+    icon_name  : str                  = Form(..., examples=[""]),
+    icon       : Optional[UploadFile] = File(None),
+    active     : bool                 = Form(True),
+    db         : Session              = Depends(get_db),
+):
+    item = db.query(TBL_STORY).filter(TBL_STORY.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Story not found")
+
+    item.title = title
+    item.description = description
+    item.icon_name = icon_name
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if icon and icon.filename:
+        item.icon = save_icon(icon)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Story",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"         : item.id,
+            "title"      : item.title,
+            "description": item.description,
+            "icon_name"  : item.icon_name,
+            "icon"       : item.icon,
+            "icon_link"  : f"{base_url}/static/images/Story/{item.icon}" if item.icon else "",
+            "active"     : item.active,
+        },
+        "error": {},
+    }

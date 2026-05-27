@@ -141,3 +141,50 @@ async def create_skill(
         },
         "error": {},
     }
+
+
+@website.put("/skills/{id}", tags=["Skill"])
+async def update_skill(
+    id         : str,
+    name       : str                  = Form(..., examples=[""]),
+    score      : float                = Form(..., examples=[""]),
+    description: str                  = Form(..., examples=[""]),
+    image      : Optional[UploadFile] = File(None),
+    active     : bool                 = Form(True),
+    db         : Session              = Depends(get_db),
+):
+    if score < 0 or score > 5:
+        raise HTTPException(status_code=400, detail="Score must be between 0 and 5")
+
+    item = db.query(TBL_SKILL).filter(TBL_SKILL.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Skill not found")
+
+    item.name = name
+    item.score = score
+    item.description = description
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if image and image.filename:
+        item.image = save_image(image)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Skill",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"         : item.id,
+            "name"       : item.name,
+            "score"      : item.score,
+            "description": item.description,
+            "image"      : item.image,
+            "image_link" : f"{base_url}/static/images/Skill/{item.image}" if item.image else "",
+            "active"     : item.active,
+        },
+        "error": {},
+    }

@@ -145,3 +145,49 @@ async def create_teach_stack(
         },
         "error": {},
     }
+
+
+@website.put("/teach-stacks/{id}", tags=["TeachStack"])
+async def update_teach_stack(
+    id         : str,
+    name_left  : str                  = Form(..., examples=[""]),
+    image_left : Optional[UploadFile] = File(None),
+    name_right : str                  = Form(..., examples=[""]),
+    image_right: Optional[UploadFile] = File(None),
+    active     : bool                 = Form(True, examples=[True]),
+    db         : Session              = Depends(get_db),
+):
+    item = db.query(TBL_TEACH_STACK).filter(TBL_TEACH_STACK.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="TeachStack not found")
+
+    item.name_left = name_left
+    item.name_right = name_right
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if image_left and image_left.filename:
+        item.image_left = save_image(image_left)
+    if image_right and image_right.filename:
+        item.image_right = save_image(image_right)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "TeachStack",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"              : item.id,
+            "name_left"       : item.name_left,
+            "image_left"      : item.image_left,
+            "image_left_link" : f"{base_url}/static/images/TeachStack/{item.image_left}" if item.image_left else "",
+            "name_right"      : item.name_right,
+            "image_right"     : item.image_right,
+            "image_right_link": f"{base_url}/static/images/TeachStack/{item.image_right}" if item.image_right else "",
+            "active"          : item.active,
+        },
+        "error": {},
+    }

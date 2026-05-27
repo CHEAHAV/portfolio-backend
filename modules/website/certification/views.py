@@ -153,3 +153,53 @@ async def create_certification(
         },
         "error": {},
     }
+
+
+@website.put("/certifications/{id}", tags=["Certification"])
+async def update_certification(
+    id           : str,
+    name         : str                  = Form(..., examples=[""]),
+    title        : str                  = Form(..., examples=[""]),
+    issuer       : str                  = Form(..., examples=[""]),
+    date_earned  : DateForm             = Form(..., examples=["2024-01-01"]),
+    credential_id: str                  = Form(..., examples=[""]),
+    icon         : Optional[UploadFile] = File(None),
+    active       : bool                 = Form(True),
+    db           : Session              = Depends(get_db),
+):
+    item = db.query(TBL_CERTIFICATION).filter(TBL_CERTIFICATION.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Certification not found")
+
+    item.name = name
+    item.title = title
+    item.issuer = issuer
+    item.date_earned = date_earned
+    item.credential_id = credential_id
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if icon and icon.filename:
+        item.icon = save_icon(icon)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Certification",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"           : item.id,
+            "name"         : item.name,
+            "title"        : item.title,
+            "issuer"       : item.issuer,
+            "date_earned"  : item.date_earned.strftime("%d, %b, %Y") if item.date_earned else "",
+            "credential_id": item.credential_id,
+            "icon"         : item.icon,
+            "icon_link"    : f"{base_url}/static/images/Certification/{item.icon}" if item.icon else "",
+            "active"       : item.active,
+        },
+        "error": {},
+    }

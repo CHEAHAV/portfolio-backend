@@ -151,3 +151,56 @@ async def create_project(
         },
         "error": {},
     }
+
+
+@website.put("/projects/{id}", tags=["Project"])
+async def update_project(
+    id         : str,
+    name       : str                  = Form(..., examples=[""]),
+    description: str                  = Form(..., examples=[""]),
+    duration   : str                  = Form(..., examples=[""]),
+    role       : str                  = Form(..., examples=[""]),
+    challenge  : str                  = Form(..., examples=[""]),
+    platform   : str                  = Form(..., examples=[""]),
+    image      : Optional[UploadFile] = File(None),
+    active     : bool                 = Form(True),
+    db         : Session              = Depends(get_db),
+):
+    item = db.query(TBL_PROJECT).filter(TBL_PROJECT.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    item.name = name
+    item.description = description
+    item.duration = duration
+    item.role = role
+    item.platform = platform
+    item.challenge = challenge
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if image and image.filename:
+        item.image = save_image(image)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Project",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"         : item.id,
+            "name"       : item.name,
+            "description": item.description,
+            "duration"   : item.duration,
+            "role"       : item.role,
+            "platform"   : item.platform,
+            "challenge"  : item.challenge,
+            "image"      : item.image,
+            "active"     : item.active,
+            "image_link" : f"{base_url}/static/images/Project/{item.image}" if item.image else "",
+        },
+        "error": {},
+    }

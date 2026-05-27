@@ -2,7 +2,7 @@ import os
 from icb.api.company.models import TBL_COMPANY
 from icb.core.db_session import get_db
 from main import website
-from fastapi import Depends, Query
+from fastapi import Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import math
 
@@ -69,4 +69,33 @@ async def get_company(
             }
         },
         'error': {}
+    }
+
+
+@website.put("/companys/{id}", tags=["Company"])
+async def update_company(
+    id: str,
+    body: dict = Body(default={}),
+    db: Session = Depends(get_db)
+):
+    row = db.query(TBL_COMPANY).filter(TBL_COMPANY.id == id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    item = body.get("item", body)
+    columns = TBL_COMPANY.__table__.columns
+    for key, value in item.items():
+        if key in columns:
+            setattr(row, key, value)
+
+    db.commit()
+    db.refresh(row)
+
+    return {
+        'ok'     : True,
+        'status' : 200,
+        'title'  : 'Campany',
+        'message': 'Data updated successfully',
+        'data'   : item,
+        'error'  : {}
     }

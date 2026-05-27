@@ -227,3 +227,78 @@ async def submit_job_application(
         return JSONResponse({"error": str(e)}, status_code=500)
     finally:
         db.close()
+
+
+@website.put("/job-application/{id}", tags=["Job"])
+async def update_job_application(
+    id          : str = Path(..., description="ID of the job application"),
+    full_name   : str = Form(..., examples=[""]),
+    email       : str = Form(..., examples=[""]),
+    phone_number: str = Form(..., examples=[""]),
+    gender      : str = Form(..., examples=[""]),
+    portfolio   : str = Form(..., examples=[""]),
+    linkedin_url: str = Form("", examples=[""]),
+    github_url  : str = Form("", examples=[""]),
+    other_url   : str = Form("", examples=[""]),
+    about_you   : str = Form("", examples=[""]),
+    upload_cv   : UploadFile | None = File(None),
+    db          : Session = Depends(get_db),
+):
+    record = db.query(TBL_JOB_APPLICATION).filter(TBL_JOB_APPLICATION.id == id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Job application not found")
+
+    record.full_name = full_name
+    record.email = email
+    record.phone_number = phone_number
+    record.gender = gender
+    record.portfolio = portfolio
+    record.linkedin_url = linkedin_url
+    record.github_url = github_url
+    record.other_url = other_url
+    record.about_you = about_you
+
+    if upload_cv and upload_cv.filename:
+        content = await upload_cv.read()
+        if len(content) > 20 * 1024 * 1024:
+            return JSONResponse({"error": "File exceeds 20 MB limit"}, status_code=400)
+
+        file_ext = os.path.splitext(upload_cv.filename)[1].lower()
+        allowed_ext = [".pdf", ".doc", ".docx"]
+        if file_ext not in allowed_ext:
+            return JSONResponse(
+                {"error": "Only PDF or Word files are allowed"},
+                status_code=400
+            )
+
+        file_name = f"{generateID()}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, file_name)
+        with open(file_path, "wb") as f:
+            f.write(content)
+        record.upload_cv = file_path
+
+    db.commit()
+    db.refresh(record)
+
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Job Application",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"          : record.id,
+            "parent_id"   : record.parent_id,
+            "full_name"   : record.full_name,
+            "email"       : record.email,
+            "phone_number": record.phone_number,
+            "gender"      : record.gender,
+            "portfolio"   : record.portfolio,
+            "linkedin_url": record.linkedin_url,
+            "github_url"  : record.github_url,
+            "other_url"   : record.other_url,
+            "about_you"   : record.about_you,
+            "upload_cv"   : record.upload_cv,
+            "status"      : record.status,
+        },
+        "error": {},
+    }

@@ -15,7 +15,7 @@ from modules.message.models import (
 )
 from icb.core.db_session import get_db
 from main import website
-from fastapi import Depends, Query, Form
+from fastapi import Depends, Form, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from modules.location_id import assign_prefixed_id
@@ -213,3 +213,47 @@ async def message(
         db.rollback()
         logger.error(f"Message post error: {e}", exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@website.put("/messages/{id}", tags=["Message"])
+async def update_message(
+    id        : str,
+    first_name: str     = Form(..., examples=[""]),
+    last_name : str     = Form(..., examples=[""]),
+    email     : str     = Form(..., examples=[""]),
+    subject   : str     = Form(..., examples=[""]),
+    message   : str     = Form(..., examples=[""]),
+    active    : bool    = Form(True),
+    db        : Session = Depends(get_db),
+):
+    record = db.query(TBL_MESSAGE).filter(TBL_MESSAGE.id == id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    record.first_name = first_name
+    record.last_name = last_name
+    record.email = email
+    record.subject = subject
+    record.message = message
+    record.active = active
+    record.re_updated_at = datetime.now()
+
+    db.commit()
+    db.refresh(record)
+
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Message",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"        : record.id,
+            "first_name": record.first_name,
+            "last_name" : record.last_name,
+            "email"     : record.email,
+            "subject"   : record.subject,
+            "message"   : record.message,
+            "active"    : record.active,
+        },
+        "error": {},
+    }

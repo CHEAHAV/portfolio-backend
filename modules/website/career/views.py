@@ -118,3 +118,43 @@ async def create_career(
         },
         "error": {},
     }
+
+
+@website.put("/careers/{id}", tags=["Career"])
+async def update_career(
+    id         : str,
+    title      : str     = Form(..., examples=[""]),
+    sub_title  : str     = Form(..., examples=[""]),
+    description: str     = Form(..., examples=[""]),
+    date       : str     = Form(..., examples=[""]),
+    active     : bool    = Form(True),
+    db         : Session = Depends(get_db),
+):
+    item = db.query(TBL_CAREER).filter(TBL_CAREER.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Career not found")
+
+    item.title       = title
+    item.sub_title   = sub_title
+    item.description = description
+    item.date        = date
+    item.active      = active
+    item.re_updated_at = datetime.now()
+
+    db.commit()
+    db.refresh(item)
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Career",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"         : item.id,
+            "title"      : item.title,
+            "sub_title"  : item.sub_title,
+            "description": item.description,
+            "date"       : item.date,
+            "active"     : item.active,
+        },
+        "error": {},
+    }

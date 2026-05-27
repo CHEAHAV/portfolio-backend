@@ -131,3 +131,41 @@ async def create_social(
         },
         "error": {},
     }
+
+
+@website.put("/socials/{id}", tags=["Social"])
+async def update_social(
+    id    : str,
+    name  : str                  = Form(..., examples=[""]),
+    icon  : Optional[UploadFile] = File(None),
+    active: bool                 = Form(True),
+    db    : Session              = Depends(get_db),
+):
+    item = db.query(TBL_SOCIAL).filter(TBL_SOCIAL.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Social not found")
+
+    item.name = name
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if icon and icon.filename:
+        item.icon = save_icon(icon)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Social",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"       : item.id,
+            "name"     : item.name,
+            "icon"     : item.icon,
+            "icon_link": f"{base_url}/static/images/Social/{item.icon}" if item.icon else "",
+            "active"   : item.active,
+        },
+        "error": {},
+    }

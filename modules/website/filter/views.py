@@ -107,3 +107,34 @@ async def create_filter(
         },
         "error": {},
     }
+
+
+@website.put("/filters/{id}", tags=["Filter"])
+async def update_filter(
+    id    : str,
+    name  : str     = Form(..., examples=[""]),
+    active: bool    = Form(True),
+    db    : Session = Depends(get_db),
+):
+    item = db.query(TBL_FILTER).filter(TBL_FILTER.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Filter not found")
+
+    item.name = name
+    item.active = active
+    item.re_updated_at = datetime.now()
+
+    db.commit()
+    db.refresh(item)
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Filter",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"    : item.id,
+            "name"  : item.name,
+            "active": item.active,
+        },
+        "error": {},
+    }

@@ -134,3 +134,44 @@ async def create_info(
         },
         "error": {},
     }
+
+
+@website.put("/infos/{id}", tags=["Info"])
+async def update_info(
+    id         : str,
+    name       : str                  = Form(..., examples=[""]),
+    description: str                  = Form(..., examples=[""]),
+    image      : Optional[UploadFile] = File(None),
+    active     : bool                 = Form(True),
+    db         : Session              = Depends(get_db),
+):
+    item = db.query(TBL_INFO).filter(TBL_INFO.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Info not found")
+
+    item.name = name
+    item.description = description
+    item.active = active
+    item.re_updated_at = datetime.now()
+    if image and image.filename:
+        item.image = save_image(image)
+
+    db.commit()
+    db.refresh(item)
+
+    base_url = os.getenv("APP_URL", "")
+    return {
+        "ok"     : True,
+        "status" : 200,
+        "title"  : "Info",
+        "message": "Data updated successfully",
+        "data"   : {
+            "id"         : item.id,
+            "name"       : item.name,
+            "description": item.description,
+            "image"      : item.image,
+            "active"     : item.active,
+            "image_link" : f"{base_url}/static/images/Info/{item.image}" if item.image else "",
+        },
+        "error": {},
+    }
