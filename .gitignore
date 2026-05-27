@@ -5,8 +5,8 @@ venvc
 env
 pycache
 # static
-static/fonts
-static/image
+# static/fonts
+# static/image
 log
 ~$Docs.docx
 __pycache__
