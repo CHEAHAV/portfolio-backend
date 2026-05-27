@@ -24,4 +24,3 @@ drop_table_unused.py
 pyproject.toml
 .vscode
 test_email.py
-static
