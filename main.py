@@ -29,6 +29,9 @@ def _safe_get_lang(key, params=None, lang='en', path='icb.'):
 
 core_lib.get_lang = _safe_get_lang
 
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION, 
@@ -49,8 +52,8 @@ website.add_middleware(
     allow_headers=["*"],
 )
 
-os.makedirs("static", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.mount("/api/v1/website", website)
     
