@@ -136,17 +136,19 @@ async def create_social(
 @website.put("/socials/{id}", tags=["Social"])
 async def update_social(
     id    : str,
-    name  : str                  = Form(..., examples=[""]),
+    name  : Optional[str]        = Form(None, examples=[""]),
     icon  : Optional[UploadFile] = File(None),
-    active: bool                 = Form(True),
+    active: Optional[bool]       = Form(None),
     db    : Session              = Depends(get_db),
 ):
     item = db.query(TBL_SOCIAL).filter(TBL_SOCIAL.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Social not found")
 
-    item.name = name
-    item.active = active
+    if name is not None:
+        item.name = name
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if icon and icon.filename:
         item.icon = save_icon(icon)

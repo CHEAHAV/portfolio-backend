@@ -142,19 +142,22 @@ async def create_my_core(
 @website.put("/my-cores/{id}", tags=["MyCore"])
 async def update_my_core(
     id         : str,
-    name       : str                  = Form(..., examples=[""]),
-    description: str                  = Form(..., examples=[""]),
+    name       : Optional[str]        = Form(None, examples=[""]),
+    description: Optional[str]        = Form(None, examples=[""]),
     image      : Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True),
+    active     : Optional[bool]       = Form(None),
     db         : Session              = Depends(get_db),
 ):
     item = db.query(TBL_MY_CORE).filter(TBL_MY_CORE.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="MyCore not found")
 
-    item.name = name
-    item.description = description
-    item.active = active
+    if name is not None:
+        item.name = name
+    if description is not None:
+        item.description = description
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if image and image.filename:
         item.image = save_image(image)

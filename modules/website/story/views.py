@@ -146,21 +146,25 @@ async def create_story(
 @website.put("/storys/{id}", tags=["Story"], include_in_schema=False)
 async def update_story(
     id         : str,
-    title      : str                  = Form(..., examples=[""]),
-    description: str                  = Form(..., examples=[""]),
-    icon_name  : str                  = Form(..., examples=[""]),
+    title      : Optional[str]        = Form(None, examples=[""]),
+    description: Optional[str]        = Form(None, examples=[""]),
+    icon_name  : Optional[str]        = Form(None, examples=[""]),
     icon       : Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True),
+    active     : Optional[bool]       = Form(None),
     db         : Session              = Depends(get_db),
 ):
     item = db.query(TBL_STORY).filter(TBL_STORY.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Story not found")
 
-    item.title = title
-    item.description = description
-    item.icon_name = icon_name
-    item.active = active
+    if title is not None:
+        item.title = title
+    if description is not None:
+        item.description = description
+    if icon_name is not None:
+        item.icon_name = icon_name
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if icon and icon.filename:
         item.icon = save_icon(icon)

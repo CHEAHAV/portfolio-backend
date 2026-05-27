@@ -58,19 +58,23 @@ def upload_image_to_cloudinary(upload: UploadFile, folder: str) -> str:
     if not upload.filename:
         raise HTTPException(status_code=400, detail="Uploaded file has no filename")
 
+    cloudinary_url = os.getenv("CLOUDINARY_URL", "")
     cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "do4c64x7h")
     api_key = os.getenv("CLOUDINARY_API_KEY", "187482869256971")
     api_secret = os.getenv("CLOUDINARY_API_SECRET", "")
 
-    if not cloud_name or not api_key or not api_secret:
+    if not cloudinary_url and (not cloud_name or not api_key or not api_secret):
         raise HTTPException(status_code=500, detail="Cloudinary is not configured")
 
-    cloudinary.config(
-        cloud_name=cloud_name,
-        api_key=api_key,
-        api_secret=api_secret,
-        secure=True,
-    )
+    if cloudinary_url:
+        cloudinary.config(secure=True)
+    else:
+        cloudinary.config(
+            cloud_name=cloud_name,
+            api_key=api_key,
+            api_secret=api_secret,
+            secure=True,
+        )
 
     source_name = Path(upload.filename).name
     public_id = f"{Path(source_name).stem or 'upload'}-{uuid.uuid4().hex}"

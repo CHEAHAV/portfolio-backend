@@ -150,20 +150,23 @@ async def create_teach_stack(
 @website.put("/teach-stacks/{id}", tags=["TeachStack"])
 async def update_teach_stack(
     id         : str,
-    name_left  : str                  = Form(..., examples=[""]),
+    name_left  : Optional[str]        = Form(None, examples=[""]),
     image_left : Optional[UploadFile] = File(None),
-    name_right : str                  = Form(..., examples=[""]),
+    name_right : Optional[str]        = Form(None, examples=[""]),
     image_right: Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True, examples=[True]),
+    active     : Optional[bool]       = Form(None, examples=[True]),
     db         : Session              = Depends(get_db),
 ):
     item = db.query(TBL_TEACH_STACK).filter(TBL_TEACH_STACK.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="TeachStack not found")
 
-    item.name_left = name_left
-    item.name_right = name_right
-    item.active = active
+    if name_left is not None:
+        item.name_left = name_left
+    if name_right is not None:
+        item.name_right = name_right
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if image_left and image_left.filename:
         item.image_left = save_image(image_left)

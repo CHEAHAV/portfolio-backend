@@ -146,24 +146,28 @@ async def create_skill(
 @website.put("/skills/{id}", tags=["Skill"])
 async def update_skill(
     id         : str,
-    name       : str                  = Form(..., examples=[""]),
-    score      : float                = Form(..., examples=[""]),
-    description: str                  = Form(..., examples=[""]),
+    name       : Optional[str]        = Form(None, examples=[""]),
+    score      : Optional[float]      = Form(None, examples=[""]),
+    description: Optional[str]        = Form(None, examples=[""]),
     image      : Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True),
+    active     : Optional[bool]       = Form(None),
     db         : Session              = Depends(get_db),
 ):
-    if score < 0 or score > 5:
+    if score is not None and (score < 0 or score > 5):
         raise HTTPException(status_code=400, detail="Score must be between 0 and 5")
 
     item = db.query(TBL_SKILL).filter(TBL_SKILL.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    item.name = name
-    item.score = score
-    item.description = description
-    item.active = active
+    if name is not None:
+        item.name = name
+    if score is not None:
+        item.score = score
+    if description is not None:
+        item.description = description
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if image and image.filename:
         item.image = save_image(image)

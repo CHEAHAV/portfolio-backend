@@ -142,19 +142,22 @@ async def create_contact_me(
 @website.put("/contact-mes/{id}", tags=["ContactMe"], include_in_schema=False)
 async def update_contact_me(
     id         : str,
-    name       : str                  = Form(..., examples=[""]),
-    description: str                  = Form(..., examples=[""]),
+    name       : Optional[str]        = Form(None, examples=[""]),
+    description: Optional[str]        = Form(None, examples=[""]),
     icon       : Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True),
+    active     : Optional[bool]       = Form(None),
     db         : Session              = Depends(get_db),
 ):
     item = db.query(TBL_CONTACT_ME).filter(TBL_CONTACT_ME.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="ContactMe not found")
 
-    item.name = name
-    item.description = description
-    item.active = active
+    if name is not None:
+        item.name = name
+    if description is not None:
+        item.description = description
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if icon and icon.filename:
         item.icon = save_icon(icon)

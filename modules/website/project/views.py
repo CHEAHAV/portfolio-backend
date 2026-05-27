@@ -156,27 +156,34 @@ async def create_project(
 @website.put("/projects/{id}", tags=["Project"])
 async def update_project(
     id         : str,
-    name       : str                  = Form(..., examples=[""]),
-    description: str                  = Form(..., examples=[""]),
-    duration   : str                  = Form(..., examples=[""]),
-    role       : str                  = Form(..., examples=[""]),
-    challenge  : str                  = Form(..., examples=[""]),
-    platform   : str                  = Form(..., examples=[""]),
+    name       : Optional[str]        = Form(None, examples=[""]),
+    description: Optional[str]        = Form(None, examples=[""]),
+    duration   : Optional[str]        = Form(None, examples=[""]),
+    role       : Optional[str]        = Form(None, examples=[""]),
+    challenge  : Optional[str]        = Form(None, examples=[""]),
+    platform   : Optional[str]        = Form(None, examples=[""]),
     image      : Optional[UploadFile] = File(None),
-    active     : bool                 = Form(True),
+    active     : Optional[bool]       = Form(None),
     db         : Session              = Depends(get_db),
 ):
     item = db.query(TBL_PROJECT).filter(TBL_PROJECT.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    item.name = name
-    item.description = description
-    item.duration = duration
-    item.role = role
-    item.platform = platform
-    item.challenge = challenge
-    item.active = active
+    if name is not None:
+        item.name = name
+    if description is not None:
+        item.description = description
+    if duration is not None:
+        item.duration = duration
+    if role is not None:
+        item.role = role
+    if platform is not None:
+        item.platform = platform
+    if challenge is not None:
+        item.challenge = challenge
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if image and image.filename:
         item.image = save_image(image)

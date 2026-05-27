@@ -158,25 +158,31 @@ async def create_certification(
 @website.put("/certifications/{id}", tags=["Certification"])
 async def update_certification(
     id           : str,
-    name         : str                  = Form(..., examples=[""]),
-    title        : str                  = Form(..., examples=[""]),
-    issuer       : str                  = Form(..., examples=[""]),
-    date_earned  : DateForm             = Form(..., examples=["2024-01-01"]),
-    credential_id: str                  = Form(..., examples=[""]),
+    name         : Optional[str]        = Form(None, examples=[""]),
+    title        : Optional[str]        = Form(None, examples=[""]),
+    issuer       : Optional[str]        = Form(None, examples=[""]),
+    date_earned  : Optional[DateForm]   = Form(None, examples=["2024-01-01"]),
+    credential_id: Optional[str]        = Form(None, examples=[""]),
     icon         : Optional[UploadFile] = File(None),
-    active       : bool                 = Form(True),
+    active       : Optional[bool]       = Form(None),
     db           : Session              = Depends(get_db),
 ):
     item = db.query(TBL_CERTIFICATION).filter(TBL_CERTIFICATION.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Certification not found")
 
-    item.name = name
-    item.title = title
-    item.issuer = issuer
-    item.date_earned = date_earned
-    item.credential_id = credential_id
-    item.active = active
+    if name is not None:
+        item.name = name
+    if title is not None:
+        item.title = title
+    if issuer is not None:
+        item.issuer = issuer
+    if date_earned is not None:
+        item.date_earned = date_earned
+    if credential_id is not None:
+        item.credential_id = credential_id
+    if active is not None:
+        item.active = active
     item.re_updated_at = datetime.now()
     if icon and icon.filename:
         item.icon = save_icon(icon)
