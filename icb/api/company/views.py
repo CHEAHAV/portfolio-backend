@@ -150,12 +150,11 @@ class COMPANY_CRUD_API(CRUDAPI):
             branch  = TBL_BRANCH(**branch_data)
             db.add(branch)
             db.commit()
-            
+            return True, ''
+
         except Exception as e:
             db.rollback()
             return False, str(e)
-        finally: 
-            return True, ''
         
     def before_save(self):
         return self.create_integration_data()
