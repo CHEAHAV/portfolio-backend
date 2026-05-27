@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 from icb.core.db_session import get_db
-import shutil
 from main import website
 from fastapi import Depends, Query, Form, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from modules.skill.models import (
     TBL_SKILL_REJECTED,
     TBL_SKILL_UNAUTH,
 )
+from modules.website.upload_utils import save_upload_with_unique_name
 
 @website.get("/skills", tags=["Skill"])
 async def get_skill(
@@ -78,13 +78,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    if not image.filename:
-        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
-
-    dest = os.path.join(IMAGE_DIR, image.filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(image.file, f)
-    return image.filename
+    return save_upload_with_unique_name(image, IMAGE_DIR)
 
 @website.post("/skills", tags=["Skill"], status_code=201)
 async def create_skill(

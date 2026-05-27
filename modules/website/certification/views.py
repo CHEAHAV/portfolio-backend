@@ -1,5 +1,4 @@
 import os
-import shutil
 import math
 from typing import Annotated, Optional
 from icb.core.db_session import get_db
@@ -16,6 +15,7 @@ from modules.certification.models import (
     TBL_CERTIFICATION_REJECTED,
     TBL_CERTIFICATION_UNAUTH,
 )
+from modules.website.upload_utils import save_upload_with_unique_name
 
 @website.get("/certifications", tags=["Certification"])
 async def get_certification(
@@ -82,13 +82,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    if not icon.filename:
-        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
-
-    dest = os.path.join(icon_DIR, icon.filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(icon.file, f)
-    return icon.filename
+    return save_upload_with_unique_name(icon, icon_DIR)
 
 def parse_date(v: str) -> date:
     return date.fromisoformat(v)

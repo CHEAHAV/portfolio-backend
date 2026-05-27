@@ -1,5 +1,4 @@
 import os
-import shutil
 import math
 from typing import Optional
 from icb.core.db_session import get_db
@@ -15,6 +14,7 @@ from modules.teach_stack.models import (
     TBL_TEACH_STACK_REJECTED,
     TBL_TEACH_STACK_UNAUTH,
 )
+from modules.website.upload_utils import save_upload_with_unique_name
 
 @website.get("/teach-stacks", tags=["TeachStack"])
 async def get_teach_stack(
@@ -80,13 +80,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    if not image.filename:
-        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
-
-    dest = os.path.join(IMAGE_DIR, image.filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(image.file, f)
-    return image.filename
+    return save_upload_with_unique_name(image, IMAGE_DIR)
 
 @website.post("/teach-stacks", tags=["TeachStack"], status_code=201)
 async def create_teach_stack(

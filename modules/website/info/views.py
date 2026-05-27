@@ -1,5 +1,4 @@
 import os
-import shutil
 import math
 from typing import Optional
 from icb.core.db_session import get_db
@@ -15,6 +14,7 @@ from modules.info.models import (
     TBL_INFO_REJECTED,
     TBL_INFO_UNAUTH,
 )
+from modules.website.upload_utils import save_upload_with_unique_name
 
 @website.get("/infos", tags=["Info"])
 async def get_info(
@@ -78,13 +78,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_image(image: UploadFile) -> str:
-    if not image.filename:
-        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
-
-    dest = os.path.join(IMAGE_DIR, image.filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(image.file, f)
-    return image.filename
+    return save_upload_with_unique_name(image, IMAGE_DIR)
 
 @website.post("/infos", tags=["Info"], status_code=201)
 async def create_info(

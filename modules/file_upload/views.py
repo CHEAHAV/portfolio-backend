@@ -24,6 +24,22 @@ from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
+
+def unique_file_name_for_folder(folder: str, file_name: str, is_private: bool = False) -> str:
+    source_name = Path(file_name).name
+    file_path = (
+        BASE_DIR + '/uploads/%s%s'
+        if is_private
+        else BASE_DIR + '/static/images/%s%s'
+    ) % ('%s/' % folder if folder else '', source_name)
+
+    if not os.path.exists(file_path):
+        return source_name
+
+    suffix = Path(source_name).suffix.lower()
+    stem = Path(source_name).stem or 'upload'
+    return f"{stem}-{uuid.uuid4().hex}{suffix}"
+
 # Custom route for import file
 @app.post("/api/v1/wb/upload-file", tags=['Upload File'])
 async def upload_files(
@@ -43,6 +59,7 @@ async def upload_files(
         file_extension  = Path(file.filename).suffix.lower()[1:]
         original_name   = file.filename
         file_name       = '%s.%s'%(uuid.uuid4(), file_extension)
+        response_file_name = file_name
         
         # Validate file extension
         if file_extension not in allow_extension:
@@ -133,11 +150,18 @@ async def upload_files(
 
             # Create new record in table file_import
             id   = str(uuid.uuid4())
+            stored_file_name = unique_file_name_for_folder(
+                folder,
+                original_name if keep_file_name else file_name,
+                is_private=is_private,
+            )
+            response_file_name = stored_file_name
+
             fobj = TBL_FILE_UPLOAD(
                 id            = id,
                 module        = module,
                 module_id     = module_id,
-                file_name     = original_name if keep_file_name else file_name,
+                file_name     = stored_file_name,
                 original_name = original_name,
                 folder        = folder,
                 operation     = 'ADD',
@@ -148,7 +172,7 @@ async def upload_files(
                 is_private    = is_private
             )
             
-            upload_image_file(file, folder, original_name if keep_file_name else file_name, is_private=is_private)
+            upload_image_file(file, folder, stored_file_name, is_private=is_private)
                         
             db.add(fobj)
             db.commit()
@@ -156,7 +180,7 @@ async def upload_files(
         # Return record with success message
         return response_msg('File Upload', "File is uploaded successfully", 200, True, 
                             data={
-                                "file_name" : file_name,
+                                "file_name" : response_file_name,
                                 "folder"    : folder,
                                 "module"    : module,
                                 "module_id" : module_id,
@@ -310,7 +334,7 @@ async def upload_image_files(
     try:
         allow_extension = ['jpeg','png','jpg','gif']
         file_extension  = Path(file.filename).suffix.lower()[1:]
-        file_name       = file.filename
+        file_name       = unique_file_name_for_folder(folder, file.filename)
         
         # Validate file extension
         if file_extension not in allow_extension:
@@ -356,7 +380,13 @@ async def upload_image_files(
         db.commit()
             
         # Return record with success message
-        return response_msg('Image Upload', "File is uploaded successfully", 200, True)
+        return response_msg(
+            'Image Upload',
+            "File is uploaded successfully",
+            200,
+            True,
+            data={"file_name": file_name, "folder": folder},
+        )
         
     except Exception as e:
         raise e

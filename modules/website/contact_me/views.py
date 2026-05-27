@@ -1,5 +1,4 @@
 import os
-import shutil
 import math
 from typing import Optional
 from icb.core.db_session import get_db
@@ -15,6 +14,7 @@ from modules.contact_me.models import (
     TBL_CONTACT_ME_REJECTED,
     TBL_CONTACT_ME_UNAUTH,
 )
+from modules.website.upload_utils import save_upload_with_unique_name
 
 @website.get("/contacts", tags=["ContactMe"])
 @website.get("/contact-mes", tags=["ContactMe"], include_in_schema=False)
@@ -79,13 +79,7 @@ def generate_id(db: Session) -> str:
 
 
 def save_icon(icon: UploadFile) -> str:
-    if not icon.filename:
-        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
-
-    dest = os.path.join(icon_DIR, icon.filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(icon.file, f)
-    return icon.filename
+    return save_upload_with_unique_name(icon, icon_DIR)
 
 @website.post("/contact-mes", tags=["ContactMe"], status_code=201)
 async def create_contact_me(
