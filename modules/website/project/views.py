@@ -42,6 +42,7 @@ async def get_project(
         'role'       : p.role,
         'platform'   : p.platform,
         'challenge'  : p.challenge,
+        'project_url': p.project_url,
         'image'      : media_name(p.image),
         "image_link" : media_url(p.image),
         'active'     : p.active
@@ -91,6 +92,7 @@ async def create_project(
     duration    : str                  = Form(...,examples=[""]),
     role        : str                  = Form(...,examples=[""]),
     challenge   : str                  = Form(...,examples=[""]),
+    project_url : str                  = Form(..., examples=[""]),
     platform    : str                  = Form(...,examples=[""]),
     image       : Optional[UploadFile] = File(None),
     active      : bool                 = Form(True),
@@ -113,6 +115,7 @@ async def create_project(
         role          = role,
         platform      = platform,
         challenge     = challenge,
+        project_url   = project_url,
         image         = image_filename,
         active        = active,
         company_id    = "SYSTEM",
@@ -145,6 +148,7 @@ async def create_project(
             "role"       : new_item.role,
             "platform"   : new_item.platform,
             "challenge"  : new_item.challenge,
+            "project_url": new_item.project_url,
             "image"      : media_name(new_item.image),
             "active"     : new_item.active,
             "image_link" : media_url(new_item.image),
@@ -161,6 +165,7 @@ async def update_project(
     duration   : Optional[str]        = Form(None, examples=[""]),
     role       : Optional[str]        = Form(None, examples=[""]),
     challenge  : Optional[str]        = Form(None, examples=[""]),
+    project_url: Optional[str]        = Form(None, examples=[""]),
     platform   : Optional[str]        = Form(None, examples=[""]),
     image      : Optional[UploadFile] = File(None),
     active     : Optional[bool]       = Form(None),
@@ -182,6 +187,8 @@ async def update_project(
         item.platform = platform
     if challenge is not None:
         item.challenge = challenge
+    if project_url is not None:
+        item.project_url = project_url
     if active is not None:
         item.active = active
     item.re_updated_at = datetime.now()
@@ -205,6 +212,7 @@ async def update_project(
             "role"       : item.role,
             "platform"   : item.platform,
             "challenge"  : item.challenge,
+            "project_url": item.project_url,
             "image"      : media_name(item.image),
             "active"     : item.active,
             "image_link" : media_url(item.image),

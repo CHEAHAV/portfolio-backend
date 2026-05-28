@@ -26,6 +26,7 @@ class PROJECT_CRUD(CRUDAPI):
             {"field" : "role", "text" : "Role"},
             {"field" : "platform", "text" : "Platform"},
             {"field" : "challenge", "text" : "Challenge"},
+            {"field" : "project_url", "text" : "Project URL"},
             {"field" : "image", "text" : "Image"},
             {"label" : "image_link", "concat": [{'field': 'image', 'separator': "" }], "text": "Image Link"},
             {"field" : "active", "text" : "Active"},

@@ -9,6 +9,7 @@ class PROJECT_PARENT():
     role        = Column(String(255))
     platform    = Column(String(255))
     challenge   = Column(Text)
+    project_url = Column(Text)
     image       = Column(String(255))
     active      = Column(Boolean, default = True, nullable= False)
 

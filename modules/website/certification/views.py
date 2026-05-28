@@ -36,15 +36,16 @@ async def get_certification(
     base_url = os.getenv("APP_URL", "")
 
     data_list = [{
-        'id'           : c.id,
-        'name'         : c.name,
-        'title'        : c.title,
-        'issuer'       : c.issuer,
-        'date_earned'  : c.date_earned.strftime("%d, %b, %Y") if c.date_earned else "",
-        'credential_id': c.credential_id,
-        'icon'         : media_name(c.icon),
-        "icon_link"    : media_url(c.icon),
-        'active'       : c.active
+        'id'             : c.id,
+        'name'           : c.name,
+        'title'          : c.title,
+        'issuer'         : c.issuer,
+        'date_earned'    : c.date_earned.strftime("%d, %b, %Y") if c.date_earned else "",
+        'credential_id'  : c.credential_id,
+        'certificate_url': c.certificate_url,
+        'icon'           : media_name(c.icon),
+        "icon_link"      : media_url(c.icon),
+        'active'         : c.active
     } for c in results]
 
     return {
@@ -91,14 +92,15 @@ DateForm = Annotated[date, BeforeValidator(parse_date)]
 
 @website.post("/certifications", tags=["Certification"], status_code=201)
 async def create_certification(
-    name          : str                  = Form(...,examples=[""]),
-    title         : str                  = Form(...,examples=[""]),
-    issuer        : str                  = Form(...,examples=[""]),
-    date_earned: DateForm = Form(..., examples=["2024-01-01"]),
-    credential_id : str                  = Form(...,examples=[""]),
-    icon          : Optional[UploadFile] = File(None),
-    active        : bool                 = Form(True),
-    db            : Session              = Depends(get_db),
+    name            : str                  = Form(...,examples=[""]),
+    title           : str                  = Form(...,examples=[""]),
+    issuer          : str                  = Form(...,examples=[""]),
+    date_earned     : DateForm             = Form(..., examples=["2024-01-01"]),
+    credential_id   : str                  = Form(...,examples=[""]),
+    certificate_url : str                  = Form(...,examples=[""]),
+    icon            : Optional[UploadFile] = File(None),
+    active          : bool                 = Form(True),
+    db              : Session              = Depends(get_db),
 ):
     # 1. Generate a unique, prefixed ID
     new_id = generate_id(db)
@@ -110,25 +112,26 @@ async def create_certification(
 
     # 3. Insert the new record
     new_item = TBL_CERTIFICATION(
-        id            = new_id,
-        name          = name,
-        title         = title,
-        issuer        = issuer,
-        date_earned   = date_earned,
-        credential_id = credential_id,
-        icon          = icon_filename,
-        active        = active,
-        company_id    = "SYSTEM",
-        branch_id     = "HQ",
-        store_id      = "",
-        re_version    = 0,
-        re_status     = "",
-        re_created_by = "",
-        re_updated_by = "",
-        re_is_public  = False,
-        flow_status   = "",
-        system_date   = "",
-        re_created_at = datetime.now(),
+        id              = new_id,
+        name            = name,
+        title           = title,
+        issuer          = issuer,
+        date_earned     = date_earned,
+        credential_id   = credential_id,
+        certificate_url = certificate_url,
+        icon            = icon_filename,
+        active          = active,
+        company_id      = "SYSTEM",
+        branch_id       = "HQ",
+        store_id        = "",
+        re_version      = 0,
+        re_status       = "",
+        re_created_by   = "",
+        re_updated_by   = "",
+        re_is_public    = False,
+        flow_status     = "",
+        system_date     = "",
+        re_created_at   = datetime.now(),
     )
     db.add(new_item)
     db.commit()
@@ -141,15 +144,16 @@ async def create_certification(
         "title"  : "Certification",
         "message": "Data created successfully",
         "data"   : {
-        "id"           : new_item.id,
-        "name"         : new_item.name,
-        "title"        : new_item.title,
-        "issuer"       : new_item.issuer,
-        "date_earned"  : new_item.date_earned.strftime("%d, %b, %Y") if new_item.date_earned else "",
-        "credential_id": new_item.credential_id,
-        "icon"         : media_name(new_item.icon),
-        "icon_link"    : media_url(new_item.icon),
-        "active"       : new_item.active,
+        "id"             : new_item.id,
+        "name"           : new_item.name,
+        "title"          : new_item.title,
+        "issuer"         : new_item.issuer,
+        "date_earned"    : new_item.date_earned.strftime("%d, %b, %Y") if new_item.date_earned else "",
+        "credential_id"  : new_item.credential_id,
+        "certificate_url": new_item.certificate_url,
+        "icon"           : media_name(new_item.icon),
+        "icon_link"      : media_url(new_item.icon),
+        "active"         : new_item.active,
         },
         "error": {},
     }
@@ -157,15 +161,16 @@ async def create_certification(
 
 @website.put("/certifications/{id}", tags=["Certification"])
 async def update_certification(
-    id           : str,
-    name         : Optional[str]        = Form(None, examples=[""]),
-    title        : Optional[str]        = Form(None, examples=[""]),
-    issuer       : Optional[str]        = Form(None, examples=[""]),
-    date_earned  : Optional[DateForm]   = Form(None, examples=["2024-01-01"]),
-    credential_id: Optional[str]        = Form(None, examples=[""]),
-    icon         : Optional[UploadFile] = File(None),
-    active       : Optional[bool]       = Form(None),
-    db           : Session              = Depends(get_db),
+    id             : str,
+    name           : Optional[str]        = Form(None, examples=[""]),
+    title          : Optional[str]        = Form(None, examples=[""]),
+    issuer         : Optional[str]        = Form(None, examples=[""]),
+    date_earned    : Optional[DateForm]   = Form(None, examples=["2024-01-01"]),
+    credential_id  : Optional[str]        = Form(None, examples=[""]),
+    certificate_url: Optional[str]        = Form(None, examples=[""]),
+    icon           : Optional[UploadFile] = File(None),
+    active         : Optional[bool]       = Form(None),
+    db             : Session              = Depends(get_db),
 ):
     item = db.query(TBL_CERTIFICATION).filter(TBL_CERTIFICATION.id == id).first()
     if not item:
@@ -181,6 +186,8 @@ async def update_certification(
         item.date_earned = date_earned
     if credential_id is not None:
         item.credential_id = credential_id
+    if certificate_url is not None:
+        item.certificate_url = certificate_url
     if active is not None:
         item.active = active
     item.re_updated_at = datetime.now()
@@ -197,15 +204,16 @@ async def update_certification(
         "title"  : "Certification",
         "message": "Data updated successfully",
         "data"   : {
-            "id"           : item.id,
-            "name"         : item.name,
-            "title"        : item.title,
-            "issuer"       : item.issuer,
-            "date_earned"  : item.date_earned.strftime("%d, %b, %Y") if item.date_earned else "",
-            "credential_id": item.credential_id,
-            "icon"         : media_name(item.icon),
-            "icon_link"    : media_url(item.icon),
-            "active"       : item.active,
+            "id"             : item.id,
+            "name"           : item.name,
+            "title"          : item.title,
+            "issuer"         : item.issuer,
+            "date_earned"    : item.date_earned.strftime("%d, %b, %Y") if item.date_earned else "",
+            "credential_id"  : item.credential_id,
+            "certificate_url": item.certificate_url,
+            "icon"           : media_name(item.icon),
+            "icon_link"      : media_url(item.icon),
+            "active"         : item.active,
         },
         "error": {},
     }

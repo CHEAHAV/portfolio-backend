@@ -8,5 +8,6 @@ class ProjectSchema(BaseModel):
     role       : str | None = None
     platform   : str | None = None
     challenge  : str | None = None
+    project_url: str | None = None
     image      : str | None = None
     active     : bool

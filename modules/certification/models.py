@@ -1,14 +1,15 @@
 from icb.core.model import *
-from sqlalchemy import Date
+from sqlalchemy import Date, Text
 class CERTIFICATION_PARENT():
-    id            = Column(String(64), primary_key = True, index = True)
-    name          = Column(String(255))
-    title         = Column(String(255))
-    issuer        = Column(String(255))
-    date_earned   = Column(Date)
-    credential_id = Column(String(255))
-    icon          = Column(String(255))
-    active        = Column(Boolean, default = True, nullable= False)
+    id              = Column(String(64), primary_key = True, index = True)
+    name            = Column(String(255))
+    title           = Column(String(255))
+    issuer          = Column(String(255))
+    date_earned     = Column(Date)
+    credential_id   = Column(String(255))
+    certificate_url = Column(Text)
+    icon            = Column(String(255))
+    active          = Column(Boolean, default = True, nullable= False)
 
 class TBL_CERTIFICATION(CERTIFICATION_PARENT, CoreModel):
     pass
