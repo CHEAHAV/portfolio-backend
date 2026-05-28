@@ -44,3 +44,4 @@ Werkzeug
 pytz
 cloudinary
 python-multipart
+resend

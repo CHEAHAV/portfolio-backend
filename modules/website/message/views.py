@@ -19,18 +19,18 @@ from fastapi import Depends, Form, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from modules.location_id import assign_prefixed_id
+import resend
 
 logger = logging.getLogger(__name__)
 
-SMTP_HOST     = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT     = int(os.getenv("SMTP_PORT", 587))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", os.getenv("SMTP_USER", ""))
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_SENDER   = os.getenv("SMTP_SENDER", SMTP_USERNAME)
-CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", SMTP_USERNAME)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+CONTACT_EMAIL  = os.getenv("CONTACT_EMAIL", "")
+
+resend.api_key = RESEND_API_KEY
+
 
 def is_contact_email_configured() -> bool:
-    return bool(SMTP_HOST and SMTP_PORT and SMTP_USERNAME and SMTP_PASSWORD and SMTP_SENDER and CONTACT_EMAIL)
+    return bool(RESEND_API_KEY and CONTACT_EMAIL)
 
 
 def send_contact_email(
@@ -45,40 +45,29 @@ def send_contact_email(
     body = f"""
     Dear CHEAHAV IT Team,
 
-    A new inquiry has been submitted through the mobile contact form. Please find the details of the submission below:
+    A new inquiry has been submitted through the mobile contact form.
 
     --- CLIENT DETAILS ---
-    Name:           {full_name if full_name else "Not provided"}
-    Email:          {email}
-    Subject:        {subject}
+    Name:    {full_name or "Not provided"}
+    Email:   {email}
+    Subject: {subject}
 
     --- MESSAGE ---
     {message}
 
     ----------------------
-    Note: This is an automated notification. Please reply directly to the client using the email address provided above.
-"""
+    Note: Reply directly to the client at the email above.
+    """
 
-    email_message = EmailMessage()
-    email_message["Subject"]  = subject
-    email_message["From"]     = SMTP_SENDER
-    email_message["To"]       = CONTACT_EMAIL
-    email_message["Reply-To"] = email
-    email_message.set_content(body)
+    resend.Emails.send({
+        "from"    : "Contact Form <onboarding@resend.dev>",
+        "to"      : [CONTACT_EMAIL],
+        "reply_to": email,
+        "subject" : subject,
+        "text"    : body,
+    })
 
-    context = ssl.create_default_context()
-    if SMTP_PORT == 465:
-        smtp = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20, context=context)
-    else:
-        smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20)
-
-    with smtp:
-        if SMTP_PORT != 465:
-            smtp.starttls(context=context)
-        smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
-        smtp.send_message(email_message)
-        logger.info(f"Contact email sent to {CONTACT_EMAIL} from {email}")
-
+    logger.info(f"Email sent to {CONTACT_EMAIL} from {email}")
 
 @website.get("/messages", tags=["Message"])
 async def get_messages(
@@ -213,47 +202,3 @@ async def message(
         db.rollback()
         logger.error(f"Message post error: {e}", exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
-
-
-@website.put("/messages/{id}", tags=["Message"])
-async def update_message(
-    id        : str,
-    first_name: str     = Form(..., examples=[""]),
-    last_name : str     = Form(..., examples=[""]),
-    email     : str     = Form(..., examples=[""]),
-    subject   : str     = Form(..., examples=[""]),
-    message   : str     = Form(..., examples=[""]),
-    active    : bool    = Form(True),
-    db        : Session = Depends(get_db),
-):
-    record = db.query(TBL_MESSAGE).filter(TBL_MESSAGE.id == id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Message not found")
-
-    record.first_name = first_name
-    record.last_name = last_name
-    record.email = email
-    record.subject = subject
-    record.message = message
-    record.active = active
-    record.re_updated_at = datetime.now()
-
-    db.commit()
-    db.refresh(record)
-
-    return {
-        "ok"     : True,
-        "status" : 200,
-        "title"  : "Message",
-        "message": "Data updated successfully",
-        "data"   : {
-            "id"        : record.id,
-            "first_name": record.first_name,
-            "last_name" : record.last_name,
-            "email"     : record.email,
-            "subject"   : record.subject,
-            "message"   : record.message,
-            "active"    : record.active,
-        },
-        "error": {},
-    }
